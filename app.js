@@ -1,7 +1,44 @@
-let role='teacher';
+const SUPABASE_URL = 'https://kjgxqgelzbowcorjtslj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_021EWd0xCydHQ0TN-C-yAQ_v9gQruhc';
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);                            let role='teacher';
 let students=JSON.parse(localStorage.getItem('students')||'["Нұрлан Әли — 8А","Айша Ермек — 9Б"]');
 let achievements=JSON.parse(localStorage.getItem('achievements')||'[{"person":"Нұрлан Әли","type":"Диплом","competition":"Математика олимпиадасы","level":"Облыстық","place":"II орын","year":"2026"},{"person":"Айша Ермек","type":"Грамота","competition":"Ғылыми жоба","level":"Республикалық","place":"I орын","year":"2026"}]');
-function login(){let u=email.value,p=password.value;if((u==='teacher'&&p==='1234')||(u==='admin'&&p==='admin')){role=u==='admin'?'admin':'teacher';loginEl=document.getElementById('login');loginEl.classList.add('hidden');app.classList.remove('hidden');who.innerHTML=role==='admin'?'👑 Әкімші':'👩‍🏫 Мұғалім';adminBtn.style.display=role==='admin'?'block':'none';show('dashboard');render()}else alert('Логин немесе құпиясөз қате')}
+async function login() {
+  const userEmail = email.value.trim();
+  const userPassword = password.value;
+
+  const { data, error } = await db.auth.signInWithPassword({
+    email: userEmail,
+    password: userPassword
+  });
+
+  if (error) {
+    alert('Email немесе пароль қате');
+    return;
+  }
+
+  const { data: teacher, error: teacherError } = await db
+    .from('teachers')
+    .select('*')
+    .eq('user_id', data.user.id)
+    .single();
+
+  if (teacherError || !teacher) {
+    await db.auth.signOut();
+    alert('Мұғалім профилі табылмады');
+    return;
+  }
+
+  role = 'teacher';
+  document.getElementById('who').textContent = teacher.full_name;
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  show('dashboard');
+}
 function logout(){app.classList.add('hidden');document.getElementById('login').classList.remove('hidden')}
 function show(id){document.querySelectorAll('main section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');render()}
 function render(){total.textContent=achievements.length;studentCount.textContent=students.length;repCount.textContent=achievements.filter(x=>x.level==='Республикалық').length;aStudents.textContent=students.length;aAchievements.textContent=achievements.length;recent.innerHTML=achievements.slice(-4).reverse().map(card).join('')||'<p>Әзірге жетістік жоқ.</p>';studentList.innerHTML=students.map(x=>`<div class="student"><b>👨‍🎓 ${x}</b><p>${achievements.filter(a=>x.includes(a.person)).length} жетістік</p></div>`).join('');renderAchievements()}
