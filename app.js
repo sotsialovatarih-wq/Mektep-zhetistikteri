@@ -29,7 +29,7 @@ async function login() {
 
   if (teacherError || !teacher) {
     await db.auth.signOut();
-    alert('Мұғалім профилі табылмады');
+    alert('Профиль қатесі: ' + (teacherError?.message || 'Мұғалім табылмады'));
     return;
   }
 
