@@ -136,7 +136,7 @@ function render() {
     achievements
       .filter(a => a.ownerType === 'student')
       .forEach(a => {
-        const key = ${a.person}|${a.className};
+        const key = a.person + '|' + a.className;
 
         if (!students[key]) {
           students[key] = {
