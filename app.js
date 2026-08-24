@@ -108,7 +108,7 @@ function render() {
   const uniqueStudents = new Set(
     achievements
       .filter(a => a.ownerType === 'student')
-      .map(a => ${a.person}|${a.className})
+     .map(a => a.person + '|' + a.className) 
   );
 
   if (total) total.textContent = achievements.length;
