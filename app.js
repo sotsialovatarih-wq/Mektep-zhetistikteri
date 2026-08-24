@@ -20,7 +20,7 @@ async function login() {
   });
 
   if (error) {
-    alert('Email немесе пароль қате');
+    alert('Кіру қатесі: ' + error.message);
     return;
   }
 
