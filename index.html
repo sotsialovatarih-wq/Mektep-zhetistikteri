@@ -1,12 +1,597 @@
-<!doctype html><html lang='kk'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Мектеп жетістіктері</title><link rel='stylesheet' href='style.css'></head><body>
-<div id='login' class='center'><div class='card login'><div class='logo'>🏆</div><h1>Мектеп жетістіктері</h1><p>Мұғалімдер мен оқушылардың жетістіктерінің бірыңғай базасы</p><input id='email' placeholder='Логин' value='teacher'><input id='password' type='password' placeholder='Құпиясөз' value='1234'><button onclick='login()'>Кіру</button><small>Демо: teacher / 1234 немесе admin / admin</small></div></div>
-<div id='app' class='hidden'><aside><h2>🏆 Жетістіктер</h2><div id='who' class='user'></div><nav><button onclick="show('dashboard')">📊 Басты бет</button><button onclick="show('students')">👨‍🎓 Оқушылар</button><button onclick="show('achievements')">🏅 Жетістіктер</button><button onclick="show('add')">➕ Жетістік қосу</button><button id='adminBtn' onclick="show('admin')">👑 Әкімші</button></nav><button class='logout' onclick='logout()'>Шығу</button></aside><main>
-<section id='dashboard'><h1>Қош келдіңіз!</h1><p>Мектептің жетістіктерін бір жерден басқарыңыз.</p><div class='stats'><div class='stat'><b id='total'>0</b><span>Барлық жетістік</span></div><div class='stat'><b id='studentCount'>0</b><span>Оқушылар</span></div><div class='stat'><b id='repCount'>0</b><span>Республикалық</span></div></div><div class='card'><h3>Соңғы жетістіктер</h3><div id='recent'></div></div></section>
-<section id='students' class='hidden'><div class='head'><h1>Оқушылар</h1><button onclick='addStudent()'>+ Оқушы қосу</button></div><div id='studentList' class='grid'></div></section>
-<section id='achievements' class='hidden'><h1>Жетістіктер</h1><input id='search' oninput='renderAchievements()' placeholder='🔎 Аты, байқау немесе деңгей бойынша іздеу'><div id='achievementList'></div></section>
-<section id='add' class='hidden'><h1>Жетістік қосу</h1><form class='card form' onsubmit='saveAchievement(event)'><label>Кімнің жетістігі?<select id='personType'><option>Оқушы</option><option>Мұғалім</option></select></label><label>Аты-жөні<input id='person' required></label><label>Сыныбы<input id='className' placeholder='Мысалы: 8А'></label><label>Жетістік түрі<select id='type'><option>Диплом</option><option>Грамота</option><option>Сертификат</option><option>Алғыс хат</option></select></label><label>Байқау / олимпиада атауы<input id='competition' required></label><label>Деңгейі<select id='level'><option>Мектепішілік</option><option>Аудандық</option><option>Облыстық</option><option>Республикалық</option><option>Халықаралық</option></select></label><label>Нәтиже<input id='place' placeholder='I орын'></label><label>Жыл<input id='year' type='number' value='2026'></label><label>Құжат<input id='file' type='file' accept='.pdf,image/*'></label><button>💾 Сақтау</button></form></section>
-<section id='admin' class='hidden'><h1>👑 Әкімші дашборды</h1><div class='stats'><div class='stat'><b id='aTeachers'>1</b><span>Мұғалім</span></div><div class='stat'><b id='aStudents'>0</b><span>Оқушы</span></div><div class='stat'><b id='aAchievements'>0</b><span>Жетістік</span></div></div><div class='card'><h3>Жүйе туралы</h3><p>Бұл демо-нұсқа деректерді осы браузерде сақтайды. Нақты мектеп жүйесі үшін Supabase базасын қосуға болады.</p></div></section>
-</main></div>
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мектеп жетістіктері</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="login-page">
+  <div class="login-card">
+    <div class="brand-mark">M</div>
+
+    <h1 data-kk="Мектеп жетістіктері"
+        data-ru="Достижения школы">
+      Мектеп жетістіктері
+    </h1>
+
+    <p data-kk="Мұғалімдер мен оқушылардың электронды жетістіктер портфолиосы"
+       data-ru="Электронное портфолио достижений учителей и учеников">
+      Мұғалімдер мен оқушылардың электронды жетістіктер портфолиосы
+    </p>
+
+    <div class="language-switch login-language">
+      <button type="button" onclick="setLanguage('kk')">ҚАЗ</button>
+      <button type="button" onclick="setLanguage('ru')">РУС</button>
+    </div>
+
+    <label data-kk="Электрондық пошта" data-ru="Электронная почта">
+      Электрондық пошта
+    </label>
+    <input id="email" type="email" placeholder="example@mail.kz">
+
+    <label data-kk="Құпия сөз" data-ru="Пароль">Құпия сөз</label>
+    <input id="password" type="password" placeholder="••••••••">
+
+    <button class="primary-btn full-btn" type="button" onclick="login()"
+            data-kk="Кіру" data-ru="Войти">
+      Кіру
+    </button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app-shell hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">M</div>
+      <div>
+        <strong data-kk="Жетістіктер" data-ru="Достижения">Жетістіктер</strong>
+        <small data-kk="Электронды портфолио" data-ru="Электронное портфолио">
+          Электронды портфолио
+        </small>
+      </div>
+    </div>
+
+    <div id="who" class="user-card"></div>
+
+    <nav class="main-nav">
+      <button type="button" onclick="show('dashboard')">
+        <span class="nav-icon">⌂</span>
+        <span data-kk="Басты бет" data-ru="Главная">Басты бет</span>
+      </button>
+
+      <button type="button" onclick="showTeacherAchievements()">
+        <span class="nav-icon">T</span>
+        <span data-kk="Мұғалім жетістігі" data-ru="Достижения учителя">
+          Мұғалім жетістігі
+        </span>
+      </button>
+
+      <button type="button" onclick="showStudentAchievements()">
+        <span class="nav-icon">S</span>
+        <span data-kk="Оқушы жетістігі" data-ru="Достижения ученика">
+          Оқушы жетістігі
+        </span>
+      </button>
+
+      <button type="button" onclick="showAllAchievements()">
+        <span class="nav-icon">★</span>
+        <span data-kk="Барлық жетістіктер" data-ru="Все достижения">
+          Барлық жетістіктер
+        </span>
+      </button>
+
+      <button type="button" onclick="show('add')">
+        <span class="nav-icon">＋</span>
+        <span data-kk="Жетістік қосу" data-ru="Добавить достижение">
+          Жетістік қосу
+        </span>
+      </button>
+
+      <button id="adminBtn" class="hidden" type="button" onclick="show('admin')">
+        <span class="nav-icon">▦</span>
+        <span data-kk="Әкімшілік" data-ru="Администрация">
+          Әкімшілік
+        </span>
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <button class="logout-btn" type="button" onclick="logout()"
+              data-kk="Шығу" data-ru="Выйти">
+        Шығу
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <header class="topbar">
+      <div>
+        <h2 id="pageTitle"
+            data-kk="Басты бет"
+            data-ru="Главная">
+          Басты бет
+        </h2>
+        <p data-kk="Мектеп жетістіктерін бір жерден басқарыңыз"
+           data-ru="Управляйте достижениями школы в одном месте">
+          Мектеп жетістіктерін бір жерден басқарыңыз
+        </p>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="language-switch">
+          <button type="button" onclick="setLanguage('kk')">ҚАЗ</button>
+          <button type="button" onclick="setLanguage('ru')">РУС</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard">
+      <div class="hero">
+        <div>
+          <span class="eyebrow"
+                data-kk="Электронды портфолио"
+                data-ru="Электронное портфолио">
+            Электронды портфолио
+          </span>
+
+          <h1 data-kk="Қош келдіңіз!"
+              data-ru="Добро пожаловать!">
+            Қош келдіңіз!
+          </h1>
+
+          <p data-kk="Мұғалімдер мен оқушылардың жетістіктерін қауіпсіз сақтаңыз және басқарыңыз."
+             data-ru="Храните и управляйте достижениями учителей и учеников в одном месте.">
+            Мұғалімдер мен оқушылардың жетістіктерін қауіпсіз сақтаңыз және басқарыңыз.
+          </p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span data-kk="Барлық жетістік" data-ru="Все достижения">
+            Барлық жетістік
+          </span>
+          <strong id="totalAchievements">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-kk="Мұғалім жетістігі" data-ru="Достижения учителей">
+            Мұғалім жетістігі
+          </span>
+          <strong id="teacherAchievementsCount">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-kk="Оқушы жетістігі" data-ru="Достижения учеников">
+            Оқушы жетістігі
+          </span>
+          <strong id="studentAchievementsCount">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-kk="Республикалық" data-ru="Республиканские">
+            Республикалық
+          </span>
+          <strong id="republicAchievements">0</strong>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="section-head">
+          <div>
+            <h2 data-kk="Соңғы жетістіктер"
+                data-ru="Последние достижения">
+              Соңғы жетістіктер
+            </h2>
+            <p data-kk="Соңғы енгізілген нәтижелер"
+               data-ru="Последние добавленные результаты">
+              Соңғы енгізілген нәтижелер
+            </p>
+          </div>
+        </div>
+
+        <div id="recent" class="achievement-grid"></div>
+      </div>
+    </section>
+
+    <!-- TEACHER ACHIEVEMENTS -->
+    <section id="teacherAchievements" class="hidden">
+      <div class="section-head">
+        <div>
+          <h1 data-kk="Мұғалім жетістігі"
+              data-ru="Достижения учителя">
+            Мұғалім жетістігі
+          </h1>
+          <p data-kk="Мұғалімнің жеке кәсіби жетістіктері"
+             data-ru="Личные профессиональные достижения учителя">
+            Мұғалімнің жеке кәсіби жетістіктері
+          </p>
+        </div>
+      </div>
+
+      <div id="teacherAchievementList" class="achievement-grid"></div>
+    </section>
+
+    <!-- STUDENT ACHIEVEMENTS -->
+    <section id="studentAchievements" class="hidden">
+      <div class="section-head">
+        <div>
+          <h1 data-kk="Оқушы жетістігі"
+              data-ru="Достижения ученика">
+            Оқушы жетістігі
+          </h1>
+          <p data-kk="Оқушылардың олимпиада, байқау және жоба нәтижелері"
+             data-ru="Результаты олимпиад, конкурсов и проектов учеников">
+            Оқушылардың олимпиада, байқау және жоба нәтижелері
+          </p>
+        </div>
+      </div>
+
+      <div id="studentAchievementList" class="achievement-grid"></div>
+    </section>
+
+    <!-- ALL ACHIEVEMENTS -->
+    <section id="achievements" class="hidden">
+      <div class="section-head">
+        <div>
+          <h1 data-kk="Барлық жетістіктер"
+              data-ru="Все достижения">
+            Барлық жетістіктер
+          </h1>
+
+          <p data-kk="Мұғалім және оқушы жетістіктерінің ортақ базасы"
+             data-ru="Общая база достижений учителей и учеников">
+            Мұғалім және оқушы жетістіктерінің ортақ базасы
+          </p>
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <input id="search"
+               type="search"
+               oninput="renderAchievements()"
+               data-placeholder-kk="Аты, байқау, пән немесе деңгей бойынша іздеу"
+               data-placeholder-ru="Поиск по имени, конкурсу, предмету или уровню"
+               placeholder="Аты, байқау, пән немесе деңгей бойынша іздеу">
+
+        <select id="ownerFilter" onchange="renderAchievements()">
+          <option value=""
+                  data-kk="Барлығы"
+                  data-ru="Все">
+            Барлығы
+          </option>
+          <option value="teacher"
+                  data-kk="Мұғалім"
+                  data-ru="Учитель">
+            Мұғалім
+          </option>
+          <option value="student"
+                  data-kk="Оқушы"
+                  data-ru="Ученик">
+            Оқушы
+          </option>
+        </select>
+
+        <select id="levelFilter" onchange="renderAchievements()">
+          <option value=""
+                  data-kk="Барлық деңгей"
+                  data-ru="Все уровни">
+            Барлық деңгей
+          </option>
+          <option value="Мектепішілік">Мектепішілік</option>
+          <option value="Қалалық">Қалалық</option>
+          <option value="Аудандық">Аудандық</option>
+          <option value="Облыстық">Облыстық</option>
+          <option value="Республикалық">Республикалық</option>
+          <option value="Халықаралық">Халықаралық</option>
+        </select>
+      </div>
+
+      <div id="list" class="achievement-grid"></div>
+    </section>
+
+    <!-- ADD ACHIEVEMENT -->
+    <section id="add" class="hidden">
+      <div class="section-head">
+        <div>
+          <h1 data-kk="Жетістік қосу"
+              data-ru="Добавить достижение">
+            Жетістік қосу
+          </h1>
+
+          <p data-kk="Жаңа жетістік пен электронды құжатты тіркеңіз"
+             data-ru="Добавьте новое достижение и электронный документ">
+            Жаңа жетістік пен электронды құжатты тіркеңіз
+          </p>
+        </div>
+      </div>
+
+      <form id="achievementForm"
+            class="content-card form-card"
+            onsubmit="saveAchievement(event)">
+
+        <div class="form-grid">
+
+          <label class="field">
+            <span data-kk="Жетістік иесі"
+                  data-ru="Владелец достижения">
+              Жетістік иесі
+            </span>
+
+            <select id="ownerType"
+                    required
+                    onchange="toggleOwnerFields()">
+              <option value="teacher"
+                      data-kk="Мұғалім жетістігі"
+                      data-ru="Достижение учителя">
+                Мұғалім жетістігі
+              </option>
+              <option value="student"
+                      data-kk="Оқушы жетістігі"
+                      data-ru="Достижение ученика">
+                Оқушы жетістігі
+              </option>
+            </select>
+          </label>
+
+          <label id="studentNameField" class="field hidden">
+            <span data-kk="Оқушының аты-жөні"
+                  data-ru="ФИО ученика">
+              Оқушының аты-жөні
+            </span>
+            <input id="studentName" type="text">
+          </label>
+
+          <label id="classNameField" class="field hidden">
+            <span data-kk="Сыныбы"
+                  data-ru="Класс">
+              Сыныбы
+            </span>
+            <input id="className"
+                   type="text"
+                   placeholder="5 А">
+          </label>
+
+          <label class="field">
+            <span data-kk="Жетістік түрі"
+                  data-ru="Тип достижения">
+              Жетістік түрі
+            </span>
+
+            <select id="type"
+                    required
+                    onchange="toggleOtherType()">
+              <option value="Диплом">Диплом</option>
+              <option value="Грамота">Грамота</option>
+              <option value="Сертификат">Сертификат</option>
+              <option value="Алғыс хат"
+                      data-kk="Алғыс хат"
+                      data-ru="Благодарственное письмо">
+                Алғыс хат
+              </option>
+              <option value="Басқа"
+                      data-kk="Басқа"
+                      data-ru="Другое">
+                Басқа
+              </option>
+            </select>
+          </label>
+
+          <label id="otherTypeField" class="field hidden">
+            <span data-kk="Жетістік түрін жазыңыз"
+                  data-ru="Укажите тип достижения">
+              Жетістік түрін жазыңыз
+            </span>
+            <input id="otherType" type="text">
+          </label>
+
+          <label class="field field-wide">
+            <span data-kk="Байқау / олимпиада / іс-шара атауы"
+                  data-ru="Название конкурса / олимпиады / мероприятия">
+              Байқау / олимпиада / іс-шара атауы
+            </span>
+            <input id="title" type="text" required>
+          </label>
+
+          <label class="field">
+            <span data-kk="Пән"
+                  data-ru="Предмет">
+              Пән
+            </span>
+            <input id="subject" type="text">
+          </label>
+
+          <label class="field">
+            <span data-kk="Деңгейі"
+                  data-ru="Уровень">
+              Деңгейі
+            </span>
+
+            <select id="level">
+              <option value="Мектепішілік">Мектепішілік</option>
+              <option value="Қалалық">Қалалық</option>
+              <option value="Аудандық">Аудандық</option>
+              <option value="Облыстық">Облыстық</option>
+              <option value="Республикалық">Республикалық</option>
+              <option value="Халықаралық">Халықаралық</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span data-kk="Орын / нәтиже"
+                  data-ru="Место / результат">
+              Орын / нәтиже
+            </span>
+            <input id="place"
+                   type="text"
+                   placeholder="I орын">
+          </label>
+
+          <label class="field">
+            <span data-kk="Жылы"
+                  data-ru="Год">
+              Жылы
+            </span>
+            <input id="year"
+                   type="number"
+                   min="2000"
+                   max="2100">
+          </label>
+
+          <label class="field">
+            <span data-kk="Өткізілген күні"
+                  data-ru="Дата проведения">
+              Өткізілген күні
+            </span>
+            <input id="eventDate" type="date">
+          </label>
+
+          <label class="field field-wide">
+            <span data-kk="Электронды құжат"
+                  data-ru="Электронный документ">
+              Электронды құжат
+            </span>
+
+            <input id="documentFile"
+                   type="file"
+                   accept=".jpg,.jpeg,.png,.pdf">
+
+            <small data-kk="JPG, PNG немесе PDF"
+                   data-ru="JPG, PNG или PDF">
+              JPG, PNG немесе PDF
+            </small>
+          </label>
+
+        </div>
+
+        <button class="primary-btn save-btn"
+                type="submit"
+                data-kk="Сақтау"
+                data-ru="Сохранить">
+          Сақтау
+        </button>
+      </form>
+    </section>
+
+    <!-- ADMINISTRATION -->
+    <section id="admin" class="hidden">
+      <div class="section-head">
+        <div>
+          <h1 data-kk="Әкімшілік"
+              data-ru="Администрация">
+            Әкімшілік
+          </h1>
+
+          <p data-kk="Мектеп бойынша мұғалімдер мен оқушылардың жетістіктерін басқару"
+             data-ru="Управление достижениями учителей и учеников школы">
+            Мектеп бойынша мұғалімдер мен оқушылардың жетістіктерін басқару
+          </p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span data-kk="Мұғалімдер"
+                data-ru="Учителя">
+            Мұғалімдер
+          </span>
+          <strong id="aTeachers">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-kk="Оқушылар"
+                data-ru="Ученики">
+            Оқушылар
+          </span>
+          <strong id="aStudents">0</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-kk="Барлық жетістік"
+                data-ru="Все достижения">
+            Барлық жетістік
+          </span>
+          <strong id="aAchievements">0</strong>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="section-head">
+          <div>
+            <h2 data-kk="Мектеп жетістіктері"
+                data-ru="Достижения школы">
+              Мектеп жетістіктері
+            </h2>
+          </div>
+        </div>
+
+        <div id="adminAchievementList" class="achievement-grid"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ACHIEVEMENT DETAILS MODAL -->
+<div id="achievementModal"
+     class="modal hidden"
+     onclick="closeAchievementModal(event)">
+
+  <div class="modal-card" onclick="event.stopPropagation()">
+
+    <button class="modal-close"
+            type="button"
+            onclick="closeAchievementModal()">
+      ×
+    </button>
+
+    <div id="achievementDetails"></div>
+
+    <div id="documentPreview" class="document-preview"></div>
+
+    <div class="document-actions">
+      <a id="viewDocumentBtn"
+         class="secondary-btn hidden"
+         target="_blank"
+         rel="noopener"
+         data-kk="Құжатты көру"
+         data-ru="Открыть документ">
+        Құжатты көру
+      </a>
+
+      <a id="downloadDocumentBtn"
+         class="secondary-btn hidden"
+         download
+         data-kk="Жүктеу"
+         data-ru="Скачать">
+        Жүктеу
+      </a>
+
+      <button id="printDocumentBtn"
+              class="secondary-btn hidden"
+              type="button"
+              onclick="printCurrentDocument()"
+              data-kk="Басып шығару"
+              data-ru="Печать">
+        Басып шығару
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
-</body></html>
+
+</body>
+</html>
