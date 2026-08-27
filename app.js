@@ -15,6 +15,8 @@ let teacherMap = {};
 let role = 'teacher';
 let currentLanguage = localStorage.getItem('siteLanguage') || 'kk';
 let currentDocumentUrl = null;
+let currentAchievementId = null;
+let editingAchievementId = null;
 
 /* =========================================================
    HELPERS
@@ -707,15 +709,33 @@ async function saveAchievement(event) {
           : null
     };
 
-    const { error } = await db
-      .from('achievements')
-      .insert(payload);
+   let saveResult;
+
+if (editingAchievementId) {
+  if (!file) {
+    payload.document_url = currentDocumentUrl;
+  }
+
+  saveResult = await db
+    .from('achievements')
+    .update(payload)
+    .eq('id', editingAchievementId);
+} else {
+  saveResult = await db
+    .from('achievements')
+    .insert(payload);
+}
+
+const { error } = saveResult; 
 
     if (error) {
       throw error;
     }
 
     document.getElementById('achievementForm').reset();
+    editingAchievementId = null;
+currentDocumentUrl = null;
+    
 
     toggleOwnerFields();
     toggleOtherType();
@@ -824,7 +844,8 @@ function openAchievement(id) {
   );
 
   if (!item) return;
-
+currentAchievementId = Number(item.id);
+  
   const isStudent = item.owner_type === 'student';
 
   const teacherName =
@@ -981,7 +1002,167 @@ function renderDocument(url) {
     `;
   }
 }
+async function deleteCurrentAchievement() {
+  if (!currentAchievementId) return;
 
+  const confirmed = confirm(
+    tr(
+      'Бұл жетістікті өшіргіңіз келе ме? Бұл әрекетті кері қайтару мүмкін емес.',
+      'Удалить это достижение? Это действие нельзя отменить.'
+    )
+  );
+
+  if (!confirmed) return;
+
+  const item = achievements.find(
+    achievement =>
+      Number(achievement.id) === Number(currentAchievementId)
+  );
+
+  if (!item) return;
+
+  if (
+    role !== 'admin' &&
+    Number(item.teacher_id) !== Number(currentTeacher?.id)
+  ) {
+    showMessage(
+      tr(
+        'Бұл жетістікті өшіруге рұқсатыңыз жоқ.',
+        'У вас нет разрешения на удаление этого достижения.'
+      )
+    );
+    return;
+  }
+
+  const { error } = await db
+    .from('achievements')
+    .delete()
+    .eq('id', currentAchievementId);
+
+  if (error) {
+    showMessage(
+      tr('Өшіру қатесі: ', 'Ошибка удаления: ') + error.message
+    );
+    return;
+  }
+
+  document
+    .getElementById('achievementModal')
+    .classList.add('hidden');
+
+  currentAchievementId = null;
+  currentDocumentUrl = null;
+
+  await loadAchievements();
+
+  showMessage(
+    tr(
+      'Жетістік сәтті өшірілді.',
+      'Достижение успешно удалено.'
+    )
+  );
+}
+function editCurrentAchievement() {
+  if (!currentAchievementId) return;
+
+  const item = achievements.find(
+    achievement =>
+      Number(achievement.id) === Number(currentAchievementId)
+  );
+
+  if (!item) return;
+
+  if (
+    role !== 'admin' &&
+    Number(item.teacher_id) !== Number(currentTeacher?.id)
+  ) {
+    showMessage(
+      tr(
+        'Бұл жетістікті өңдеуге рұқсатыңыз жоқ.',
+        'У вас нет разрешения на редактирование этого достижения.'
+      )
+    );
+    return;
+  }
+
+  editingAchievementId = Number(item.id);
+
+  document.getElementById('ownerType').value =
+    item.owner_type === 'student' ? 'student' : 'teacher';
+
+  toggleOwnerFields();
+
+  document.getElementById('studentName').value =
+    item.student_name || '';
+
+  document.getElementById('className').value =
+    item.class_name || '';
+
+  const standardTypes = [
+    'Диплом',
+    'Грамота',
+    'Сертификат',
+    'Алғыс хат'
+  ];
+
+  if (standardTypes.includes(item.achievement_type)) {
+    document.getElementById('type').value =
+      item.achievement_type || 'Диплом';
+
+    document.getElementById('otherType').value = '';
+  } else {
+    document.getElementById('type').value = 'Басқа';
+    document.getElementById('otherType').value =
+      item.achievement_type || '';
+  }
+
+  toggleOtherType();
+
+  document.getElementById('title').value =
+    item.title || '';
+
+  document.getElementById('subject').value =
+    item.subject || '';
+
+  document.getElementById('level').value =
+    item.level || 'Мектепішілік';
+
+  document.getElementById('place').value =
+    item.place || '';
+
+  document.getElementById('year').value =
+    item.achievement_year || '';
+
+  document.getElementById('eventDate').value =
+    item.event_date
+      ? String(item.event_date).slice(0, 10)
+      : '';
+
+  document.getElementById('documentFile').value = '';
+
+  currentDocumentUrl = item.document_url || null;
+
+  document
+    .getElementById('achievementModal')
+    .classList.add('hidden');
+
+  show('add');
+
+  pageTitle(
+    'Жетістікті өңдеу',
+    'Редактировать достижение'
+  );
+
+  const submitButton =
+    document.querySelector(
+      '#achievementForm button[type="submit"]'
+    );
+
+  if (submitButton) {
+    submitButton.textContent =
+      tr('Өзгерістерді сақтау', 'Сохранить изменения');
+  }
+}
 function closeAchievementModal(event) {
   if (
     event &&
