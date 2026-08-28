@@ -716,18 +716,26 @@ if (editingAchievementId) {
     payload.document_url = currentDocumentUrl;
   }
 
-  saveResult = await db
-    .from('achievements')
-    .update(payload)
-    .eq('id', editingAchievementId);
+ saveResult = await db
+  .from('achievements')
+  .update(payload)
+  .eq('id', editingAchievementId)
+  .select(); 
 } else {
   saveResult = await db
     .from('achievements')
     .insert(payload);
 }
 
-const { error } = saveResult; 
-
+const { data: savedData, error } = saveResult; 
+if (editingAchievementId && !error && (!savedData || savedData.length === 0)) {
+  throw new Error(
+    tr(
+      'Жазба өзгертілмеді. Supabase UPDATE рұқсатын тексеру қажет.',
+      'Запись не изменена. Необходимо проверить разрешение UPDATE в Supabase.'
+    )
+  );
+}
     if (error) {
       throw error;
     }
