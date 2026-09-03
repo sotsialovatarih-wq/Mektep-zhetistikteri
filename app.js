@@ -400,28 +400,47 @@ async function loadTeacherMap() {
 ========================================================= */
 
 function updateDashboard() {
-  const total = achievements.length;
+    const total = achievements.length;
 
-  const teacherCount = achievements.filter(
-    item => item.owner_type !== 'student'
-  ).length;
+    const teacherCount = achievements.filter(
+        item => item.owner_type !== 'student'
+    ).length;
 
-  const studentCount = achievements.filter(
-    item => item.owner_type === 'student'
-  ).length;
+    const studentCount = achievements.filter(
+        item => item.owner_type === 'student'
+    ).length;
 
-  const republicCount = achievements.filter(
-    item => normalize(item.level) === normalize('Республикалық')
-  ).length;
+    const republicCount = achievements.filter(
+        item => normalize(item.level) === normalize('Республикалық')
+    ).length;
 
-  setText('totalAchievements', total);
-  setText('teacherAchievementsCount', teacherCount);
-  setText('studentAchievementsCount', studentCount);
-  setText('republicAchievements', republicCount);
+    const regionalCount = achievements.filter(
+        item => normalize(item.level) === normalize('Облыстық')
+    ).length;
 
-  const recent = achievements.slice(0, 6);
+    const cityCount = achievements.filter(
+        item => normalize(item.level) === normalize('Қалалық')
+    ).length;
 
-  renderCards('recent', recent);
+    const internationalCount = achievements.filter(
+        item => normalize(item.level) === normalize('Халықаралық')
+    ).length;
+
+    const schoolCount = achievements.filter(
+        item => normalize(item.level) === normalize('Мектепішілік')
+    ).length;
+
+    setText('totalAchievements', total);
+    setText('teacherAchievementsCount', teacherCount);
+    setText('studentAchievementsCount', studentCount);
+    setText('republicAchievements', republicCount);
+    setText('regionalAchievements', regionalCount);
+    setText('cityAchievements', cityCount);
+    setText('internationalAchievements', internationalCount);
+    setText('schoolAchievements', schoolCount);
+
+    const recent = achievements.slice(0, 6);
+    renderCards('recent', recent);
 }
 
 function setText(id, value) {
