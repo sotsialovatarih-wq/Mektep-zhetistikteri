@@ -195,8 +195,10 @@ async function loadProfile(user) {
 
   role = detectRole(teacher);
 
-  document.getElementById('who').textContent =
-    teacher.full_name || user.email;
+ document.getElementById('who').textContent =
+    role === 'admin'
+        ? tr('Мектеп әкімшілігі', 'Администрация школы')
+        : (teacher.full_name || user.email);
 
   document.getElementById('login').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
