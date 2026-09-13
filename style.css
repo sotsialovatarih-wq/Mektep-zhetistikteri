@@ -926,3 +926,53 @@ button {
     display: none !important;
   }
 }
+/* ===== TEACHER PROFILE PHOTO ===== */
+
+.teacher-profile-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 18px;
+}
+
+.teacher-avatar,
+.teacher-avatar-placeholder {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.teacher-avatar {
+  object-fit: cover;
+  display: block;
+}
+
+.teacher-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 38px;
+}
+
+.avatar-upload-btn {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.10);
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+
+.avatar-upload-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.teacher-profile-photo .hidden {
+  display: none !important;
+}
