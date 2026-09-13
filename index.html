@@ -60,7 +60,32 @@
     </div>
 
     <div id="who" class="user-card"></div>
+<div id="teacherProfilePhoto" class="teacher-profile-photo">
+  <img id="teacherAvatar" alt="Мұғалім фотосы" class="teacher-avatar hidden">
 
+  <div id="teacherAvatarPlaceholder" class="teacher-avatar-placeholder">
+    👤
+  </div>
+
+  <input
+    type="file"
+    id="teacherAvatarInput"
+    accept="image/jpeg,image/png,image/webp"
+    class="hidden"
+    onchange="uploadTeacherAvatar(this.files[0])"
+  >
+
+  <button
+    type="button"
+    id="teacherAvatarBtn"
+    class="avatar-upload-btn"
+    onclick="document.getElementById('teacherAvatarInput').click()"
+  >
+    <span data-kk="Фото жүктеу" data-ru="Загрузить фото">
+      Фото жүктеу
+    </span>
+  </button>
+</div>
     <nav class="main-nav">
       <button type="button" onclick="show('dashboard')">
         <span class="nav-icon">⌂</span>
