@@ -193,6 +193,7 @@ async function loadProfile(user) {
 
   currentTeacher = teacher;
 
+  showTeacherAvatar(teacher.avatar_url);
   role = detectRole(teacher);
 
  document.getElementById('who').textContent =
@@ -1325,3 +1326,108 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await restoreSession();
 });
+/* =========================================================
+   TEACHER PROFILE AVATAR
+========================================================= */
+
+function showTeacherAvatar(avatarUrl) {
+  const img = document.getElementById('teacherAvatar');
+  const placeholder = document.getElementById('teacherAvatarPlaceholder');
+  const btnText = document.querySelector('#teacherAvatarBtn span');
+
+  if (!img || !placeholder) return;
+
+  if (avatarUrl) {
+    img.src = avatarUrl;
+    img.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+
+    if (btnText) {
+      btnText.textContent =
+        currentLanguage === 'ru' ? 'Изменить фото' : 'Фото ауыстыру';
+    }
+  } else {
+    img.removeAttribute('src');
+    img.classList.add('hidden');
+    placeholder.classList.remove('hidden');
+
+    if (btnText) {
+      btnText.textContent =
+        currentLanguage === 'ru' ? 'Загрузить фото' : 'Фото жүктеу';
+    }
+  }
+}
+
+async function uploadTeacherAvatar(file) {
+  if (!file || !currentUser || !currentTeacher) return;
+
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+  if (!allowedTypes.includes(file.type)) {
+    alert(
+      currentLanguage === 'ru'
+        ? 'Выберите изображение JPG, PNG или WEBP.'
+        : 'JPG, PNG немесе WEBP суретін таңдаңыз.'
+    );
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert(
+      currentLanguage === 'ru'
+        ? 'Размер фото не должен превышать 5 МБ.'
+        : 'Фото көлемі 5 МБ-тан аспауы керек.'
+    );
+    return;
+  }
+
+  const extension =
+    file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+
+  const filePath = `${currentUser.id}/avatar.${extension}`;
+
+  try {
+    const { error: uploadError } = await db.storage
+      .from('teacher-avatars')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicData } = db.storage
+      .from('teacher-avatars')
+      .getPublicUrl(filePath);
+
+    const avatarUrl =
+      `${publicData.publicUrl}?v=${Date.now()}`;
+
+    const { error: updateError } = await db
+      .from('teachers')
+      .update({ avatar_url: avatarUrl })
+      .eq('id', currentTeacher.id);
+
+    if (updateError) throw updateError;
+
+    currentTeacher.avatar_url = avatarUrl;
+    showTeacherAvatar(avatarUrl);
+
+    const input = document.getElementById('teacherAvatarInput');
+    if (input) input.value = '';
+
+    alert(
+      currentLanguage === 'ru'
+        ? 'Фото успешно сохранено.'
+        : 'Фото сәтті сақталды.'
+    );
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+
+    alert(
+      currentLanguage === 'ru'
+        ? `Не удалось сохранить фото: ${error.message || 'Ошибка'}`
+        : `Фотоны сақтау мүмкін болмады: ${error.message || 'Қате'}`
+    );
+  }
+}
