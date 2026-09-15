@@ -1431,3 +1431,181 @@ async function uploadTeacherAvatar(file) {
     );
   }
 }
+/* =========================================================
+   PASSWORD CHANGE
+========================================================= */
+
+function openPasswordModal() {
+  const modal = document.getElementById('passwordModal');
+  if (!modal) return;
+
+  document.getElementById('newPassword').value = '';
+  document.getElementById('confirmPassword').value = '';
+
+  modal.classList.remove('hidden');
+}
+
+function closePasswordModal(event) {
+  const modal = document.getElementById('passwordModal');
+  if (!modal) return;
+
+  if (event && event.target !== modal) return;
+
+  modal.classList.add('hidden');
+}
+
+async function changePassword(event) {
+  event.preventDefault();
+
+  const password =
+    document.getElementById('newPassword').value;
+
+  const confirmPassword =
+    document.getElementById('confirmPassword').value;
+
+  if (password.length < 8) {
+    alert(
+      currentLanguage === 'ru'
+        ? 'Пароль должен содержать не менее 8 символов.'
+        : 'Құпия сөз кемінде 8 таңбадан тұруы керек.'
+    );
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    alert(
+      currentLanguage === 'ru'
+        ? 'Пароли не совпадают.'
+        : 'Құпия сөздер сәйкес келмейді.'
+    );
+    return;
+  }
+
+  const { error } = await db.auth.updateUser({
+    password: password
+  });
+
+  if (error) {
+    alert(
+      currentLanguage === 'ru'
+        ? 'Ошибка изменения пароля: ' + error.message
+        : 'Құпия сөзді өзгерту қатесі: ' + error.message
+    );
+    return;
+  }
+
+  closePasswordModal();
+
+  alert(
+    currentLanguage === 'ru'
+      ? 'Пароль успешно изменён!'
+      : 'Құпия сөз сәтті өзгертілді!'
+  );
+}
+
+
+/* =========================================================
+   DOCUMENT PRINT FIX
+========================================================= */
+
+function printCurrentDocument() {
+  if (!currentDocumentUrl) {
+    alert(
+      currentLanguage === 'ru'
+        ? 'Нет документа для печати.'
+        : 'Басып шығаратын құжат жоқ.'
+    );
+    return;
+  }
+
+  const cleanUrl =
+    currentDocumentUrl.toLowerCase().split('?')[0];
+
+  /* PDF */
+  if (cleanUrl.endsWith('.pdf')) {
+    const printWindow =
+      window.open(currentDocumentUrl, '_blank');
+
+    if (!printWindow) {
+      alert(
+        currentLanguage === 'ru'
+          ? 'Браузер заблокировал новое окно.'
+          : 'Браузер жаңа терезені бұғаттады.'
+      );
+    }
+
+    return;
+  }
+
+  /* JPG / PNG / WEBP */
+  if (/\.(jpg|jpeg|png|webp)$/.test(cleanUrl)) {
+    const printWindow = window.open('', '_blank');
+
+    if (!printWindow) {
+      alert(
+        currentLanguage === 'ru'
+          ? 'Браузер заблокировал новое окно.'
+          : 'Браузер жаңа терезені бұғаттады.'
+      );
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Print</title>
+
+        <style>
+          html, body {
+            margin: 0;
+            padding: 0;
+            background: white;
+          }
+
+          body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+          }
+
+          img {
+            max-width: 100%;
+            max-height: 100vh;
+            object-fit: contain;
+          }
+
+          @media print {
+            img {
+              max-width: 100%;
+              max-height: 100%;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <img
+          id="printImage"
+          src="${currentDocumentUrl}"
+        >
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+
+    const image =
+      printWindow.document.getElementById('printImage');
+
+    image.onload = function () {
+      printWindow.focus();
+      printWindow.print();
+    };
+
+    return;
+  }
+
+  window.open(currentDocumentUrl, '_blank');
+}
