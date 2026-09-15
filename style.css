@@ -976,3 +976,13 @@ button {
 .teacher-profile-photo .hidden {
   display: none !important;
 }
+
+
+/* PASSWORD CHANGE */
+.password-btn { width:100%; margin-bottom:8px; padding:12px; border:1px solid rgba(255,255,255,.12); border-radius:12px; color:#e8f0ff; background:rgba(255,255,255,.07); font-weight:650; }
+.password-btn:hover { background:rgba(255,255,255,.13); }
+.password-card { width:min(480px,100%); }
+.password-card h2 { margin:0 0 6px; }
+.password-card > p { margin:0 0 20px; color:var(--muted); }
+.password-form { display:grid; gap:15px; }
+.password-form .primary-btn { margin-top:5px; }
