@@ -129,6 +129,7 @@
     </nav>
 
     <div class="sidebar-bottom">
+      <button class="password-btn" type="button" onclick="openPasswordModal()" data-kk="Құпия сөзді өзгерту" data-ru="Изменить пароль">🔐 Құпия сөзді өзгерту</button>
       <button class="logout-btn" type="button" onclick="logout()"
               data-kk="Шығу" data-ru="Выйти">
         Шығу
@@ -657,6 +658,9 @@
     </div>
   </div>
 </div>
+
+<!-- PASSWORD CHANGE MODAL -->
+<div id="passwordModal" class="modal hidden" onclick="closePasswordModal(event)"><div class="modal-card password-modal-card" onclick="event.stopPropagation()"><button class="modal-close" type="button" onclick="closePasswordModal()">×</button><h2 data-kk="Құпия сөзді өзгерту" data-ru="Изменить пароль">Құпия сөзді өзгерту</h2><p class="password-help" data-kk="Жаңа құпия сөз кемінде 8 таңбадан тұрсын." data-ru="Новый пароль должен содержать не менее 8 символов.">Жаңа құпия сөз кемінде 8 таңбадан тұрсын.</p><form onsubmit="changePassword(event)"><label class="field"><span data-kk="Жаңа құпия сөз" data-ru="Новый пароль">Жаңа құпия сөз</span><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></label><label class="field password-confirm-field"><span data-kk="Құпия сөзді қайталаңыз" data-ru="Повторите пароль">Құпия сөзді қайталаңыз</span><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label><button id="changePasswordBtn" class="primary-btn full-btn" type="submit" data-kk="Сақтау" data-ru="Сохранить">Сақтау</button></form></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
