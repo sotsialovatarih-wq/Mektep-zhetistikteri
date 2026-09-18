@@ -1257,13 +1257,11 @@ async function loadAdminData() {
     students кестесі бар болса санын көрсетеміз.
     Кестеге рұқсат жоқ болса сайттың қалған бөлігі жұмысын жалғастырады.
   */
-  const studentResult = await db
-    .from('students')
-    .select('id', { count: 'exact', head: true });
+  const studentAchievementCount = achievements.filter(
+  item => item.owner_type === 'student'
+).length;
 
-  if (!studentResult.error) {
-    setText('aStudents', studentResult.count || 0);
-  }
+setText('aStudents', studentAchievementCount);
 
   setText('aAchievements', achievements.length);
 
