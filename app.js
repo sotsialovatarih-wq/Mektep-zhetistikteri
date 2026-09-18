@@ -1609,3 +1609,268 @@ function printCurrentDocument() {
 
   window.open(currentDocumentUrl, '_blank');
 }
+/* =========================================================
+   ADMIN TEACHER SEARCH & PORTFOLIO
+========================================================= */
+
+let adminTeachers = [];
+
+async function loadAdminTeachers() {
+  if (role !== 'admin') return;
+
+  const { data, error } = await db
+    .from('teachers')
+    .select('id, full_name, subject, position')
+    .order('full_name', { ascending: true });
+
+  if (error) {
+    console.error('Admin teachers:', error);
+
+    showMessage(
+      tr(
+        'Мұғалімдер тізімін жүктеу қатесі: ',
+        'Ошибка загрузки списка учителей: '
+      ) + error.message
+    );
+
+    return;
+  }
+
+  adminTeachers = data || [];
+
+  renderAdminTeachers(adminTeachers);
+}
+
+
+function renderAdminTeachers(list) {
+  const container =
+    document.getElementById('adminTeacherList');
+
+  if (!container) return;
+
+  if (!list || list.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        ${tr(
+          'Мұғалім табылмады.',
+          'Учитель не найден.'
+        )}
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list
+    .map(teacher => {
+
+      const teacherAchievements =
+        achievements.filter(
+          item =>
+            Number(item.teacher_id) ===
+            Number(teacher.id)
+        );
+
+      return `
+        <div
+          class="admin-teacher-card"
+          onclick="openAdminTeacherPortfolio(${Number(teacher.id)})"
+          role="button"
+          tabindex="0"
+        >
+
+          <h3>
+            ${esc(teacher.full_name || tr('Мұғалім', 'Учитель'))}
+          </h3>
+
+          ${
+            teacher.subject
+              ? `
+                <p>
+                  <strong>
+                    ${tr('Пәні:', 'Предмет:')}
+                  </strong>
+                  ${esc(teacher.subject)}
+                </p>
+              `
+              : ''
+          }
+
+          ${
+            teacher.position
+              ? `
+                <p>
+                  ${esc(teacher.position)}
+                </p>
+              `
+              : ''
+          }
+
+          <span class="teacher-achievement-count">
+            ${tr('Жетістіктер:', 'Достижения:')}
+            ${teacherAchievements.length}
+          </span>
+
+        </div>
+      `;
+    })
+    .join('');
+}
+
+
+function filterAdminTeachers() {
+  const input =
+    document.getElementById('adminTeacherSearch');
+
+  const search = normalize(input?.value);
+
+  if (!search) {
+    renderAdminTeachers(adminTeachers);
+    return;
+  }
+
+  const filtered =
+    adminTeachers.filter(teacher => {
+
+      const text = [
+        teacher.full_name,
+        teacher.subject,
+        teacher.position
+      ]
+        .map(normalize)
+        .join(' ');
+
+      return text.includes(search);
+    });
+
+  renderAdminTeachers(filtered);
+}
+
+
+function openAdminTeacherPortfolio(teacherId) {
+  const teacher =
+    adminTeachers.find(
+      item =>
+        Number(item.id) === Number(teacherId)
+    );
+
+  if (!teacher) return;
+
+  const teacherAchievements =
+    achievements.filter(
+      item =>
+        Number(item.teacher_id) ===
+        Number(teacher.id)
+    );
+
+  const ownAchievements =
+    teacherAchievements.filter(
+      item => item.owner_type !== 'student'
+    );
+
+  const studentAchievements =
+    teacherAchievements.filter(
+      item => item.owner_type === 'student'
+    );
+
+  const name =
+    document.getElementById(
+      'adminSelectedTeacherName'
+    );
+
+  const info =
+    document.getElementById(
+      'adminSelectedTeacherInfo'
+    );
+
+  const portfolio =
+    document.getElementById(
+      'adminTeacherPortfolio'
+    );
+
+  if (name) {
+    name.textContent =
+      teacher.full_name ||
+      tr('Мұғалім портфолиосы', 'Портфолио учителя');
+  }
+
+  if (info) {
+    const parts = [];
+
+    if (teacher.subject) {
+      parts.push(teacher.subject);
+    }
+
+    if (
+      teacher.position &&
+      teacher.position !== teacher.subject
+    ) {
+      parts.push(teacher.position);
+    }
+
+    info.textContent = parts.join(' • ');
+  }
+
+  setText(
+    'adminTeacherTotal',
+    teacherAchievements.length
+  );
+
+  setText(
+    'adminTeacherOwn',
+    ownAchievements.length
+  );
+
+  setText(
+    'adminTeacherStudents',
+    studentAchievements.length
+  );
+
+  renderCards(
+    'adminTeacherAchievementList',
+    teacherAchievements
+  );
+
+  if (portfolio) {
+    portfolio.classList.remove('hidden');
+
+    setTimeout(() => {
+      portfolio.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 50);
+  }
+}
+
+
+function closeAdminTeacherPortfolio() {
+  const portfolio =
+    document.getElementById(
+      'adminTeacherPortfolio'
+    );
+
+  if (portfolio) {
+    portfolio.classList.add('hidden');
+  }
+
+  const input =
+    document.getElementById(
+      'adminTeacherSearch'
+    );
+
+  if (input) {
+    input.focus();
+  }
+}
+
+
+/* Әкімшілік бөлімі ашылғанда мұғалімдер тізімін жаңарту */
+const originalLoadAdminData = loadAdminData;
+
+loadAdminData = async function () {
+  await originalLoadAdminData();
+
+  if (role === 'admin') {
+    await loadAdminTeachers();
+  }
+};
