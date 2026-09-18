@@ -1685,7 +1685,7 @@ function renderAdminTeachers(list) {
               ? `
                 <p>
                   <strong>
-                    ${tr('Пәні:', 'Предмет:')}
+                  ${currentLanguage === 'ru' ? 'Предмет:' : 'Пәні:'}
                   </strong>
                   ${esc(teacher.subject)}
                 </p>
@@ -1704,7 +1704,7 @@ function renderAdminTeachers(list) {
           }
 
           <span class="teacher-achievement-count">
-            ${tr('Жетістіктер:', 'Достижения:')}
+           ${currentLanguage === 'ru' ? 'Достижения:' : 'Жетістіктер:'}
             ${teacherAchievements.length}
           </span>
 
