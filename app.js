@@ -1872,3 +1872,46 @@ loadAdminData = async function () {
     await loadAdminTeachers();
   }
 };
+/* =========================================================
+   STUDENT ACHIEVEMENT SEARCH
+========================================================= */
+
+function filterStudentAchievements() {
+  const input = document.getElementById('studentAchievementSearch');
+  if (!input) return;
+
+  const search = normalize(input.value);
+
+  let studentItems = achievements.filter(
+    item => item.owner_type === 'student'
+  );
+
+  // Мұғалім кірсе — тек өзіне тиесілі оқушы жетістіктері
+  if (role !== 'admin' && currentTeacher) {
+    studentItems = studentItems.filter(
+      item =>
+        Number(item.teacher_id) === Number(currentTeacher.id)
+    );
+  }
+
+  // Іздеу бос болса — барлық қолжетімді оқушы жетістіктерін көрсету
+  if (!search) {
+    renderCards('studentAchievementList', studentItems);
+    return;
+  }
+
+  // Оқушының аты-жөні бойынша іздеу
+  const filtered = studentItems.filter(item => {
+    const studentName = normalize(
+      item.student_name ||
+      item.student_full_name ||
+      item.person_name ||
+      item.full_name ||
+      ''
+    );
+
+    return studentName.includes(search);
+  });
+
+  renderCards('studentAchievementList', filtered);
+}
