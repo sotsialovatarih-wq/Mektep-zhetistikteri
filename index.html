@@ -577,7 +577,104 @@
           <strong id="aAchievements">0</strong>
         </div>
       </div>
+<!-- ADMIN TEACHER SEARCH -->
+<div class="content-card admin-teacher-search-card">
 
+    <div class="section-head">
+        <div>
+            <h2
+                data-kk="Мұғалімдер"
+                data-ru="Учителя">
+                Мұғалімдер
+            </h2>
+
+            <p
+                data-kk="Мұғалімді аты-жөні бойынша іздеп, жеке портфолиосын қараңыз"
+                data-ru="Найдите учителя по ФИО и откройте его личное портфолио">
+                Мұғалімді аты-жөні бойынша іздеп, жеке портфолиосын қараңыз
+            </p>
+        </div>
+    </div>
+
+    <div class="admin-teacher-search">
+        <input
+            id="adminTeacherSearch"
+            type="search"
+            placeholder="Мұғалімнің аты-жөнін енгізіңіз..."
+            data-placeholder-kk="Мұғалімнің аты-жөнін енгізіңіз..."
+            data-placeholder-ru="Введите ФИО учителя..."
+            oninput="filterAdminTeachers()"
+        >
+    </div>
+
+    <div
+        id="adminTeacherList"
+        class="admin-teacher-grid">
+    </div>
+
+</div>
+
+<!-- SELECTED TEACHER PORTFOLIO -->
+<div
+    id="adminTeacherPortfolio"
+    class="content-card hidden">
+
+    <div class="section-head">
+        <div>
+            <h2 id="adminSelectedTeacherName">
+                Мұғалім портфолиосы
+            </h2>
+
+            <p id="adminSelectedTeacherInfo"></p>
+        </div>
+
+        <button
+            type="button"
+            class="secondary-btn"
+            onclick="closeAdminTeacherPortfolio()"
+            data-kk="Барлық мұғалімдер"
+            data-ru="Все учителя">
+            Барлық мұғалімдер
+        </button>
+    </div>
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <span
+                data-kk="Барлық жетістік"
+                data-ru="Все достижения">
+                Барлық жетістік
+            </span>
+            <strong id="adminTeacherTotal">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span
+                data-kk="Мұғалім жетістігі"
+                data-ru="Достижения учителя">
+                Мұғалім жетістігі
+            </span>
+            <strong id="adminTeacherOwn">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span
+                data-kk="Оқушы жетістігі"
+                data-ru="Достижения учеников">
+                Оқушы жетістігі
+            </span>
+            <strong id="adminTeacherStudents">0</strong>
+        </div>
+
+    </div>
+
+    <div
+        id="adminTeacherAchievementList"
+        class="achievement-grid">
+    </div>
+
+</div>
       <div class="content-card">
         <div class="section-head">
           <div>
