@@ -1064,10 +1064,15 @@ async function deleteCurrentAchievement() {
     return;
   }
 
-  const { error } = await db
+  const { data: deletedRows, error } = await db
     .from('achievements')
     .delete()
-    .eq('id', currentAchievementId);
+    .eq('id', currentAchievementId)
+    .select('id');
+  if (!error && (!deletedRows || deletedRows.length === 0)) {
+    showMessage(tr('Жазба өшірілмеді. Supabase DELETE рұқсатын тексеріңіз.', 'Запись не удалена. Проверьте разрешение DELETE в Supabase.'));
+    return;
+  }
 
   if (error) {
     showMessage(
@@ -1915,3 +1920,22 @@ function filterStudentAchievements() {
 
   renderCards('studentAchievementList', filtered);
 }
+
+// New-entry button: clear stale edit state without affecting editing existing records.
+function startNewAchievement() {
+  editingAchievementId = null; currentDocumentUrl = null;
+  const form = document.getElementById('achievementForm'); if (form) form.reset();
+  toggleOwnerFields(); toggleOtherType(); show('add');
+  const btn = document.querySelector('#achievementForm button[type="submit"]');
+  if (btn) btn.textContent = tr('Сақтау', 'Сохранить');
+}
+// Hide editing controls when the logged-in teacher does not own the record.
+const originalOpenAchievement = openAchievement;
+openAchievement = function(id) {
+  originalOpenAchievement(id);
+  const item = achievements.find(a => Number(a.id) === Number(id));
+  const allowed = !!item && (role === 'admin' || Number(item.teacher_id) === Number(currentTeacher?.id));
+  for (const btnId of ['editAchievementBtn','deleteAchievementBtn']) {
+    document.getElementById(btnId)?.classList.toggle('hidden', !allowed);
+  }
+};
